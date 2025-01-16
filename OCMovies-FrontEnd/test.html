@@ -1,157 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link href="styles.css" rel="stylesheet" />
 
     <!-- <title>Movies List</title> -->
-</head>
-<body>
-    <div class="container mt-5" style="background-color: #61787F; color: white; display: flex; align-items: center;">
-        <img src="./image1 1.svg" alt="logo">
-        <h1 class="" style="margin-left: 2rem;font-family: oswald; font-size: 40px;">Vidéos à la demande</h1>
-    </div> 
-    <div id = "best-movie" class="container mt-5"> 
-    </div>
-    <div id = "best-rating-movies" class="container mt-5">
+  </head>
+  <body>
+    <div
+      class="container mt-5"
+      style="
+        background-color: #61787f;
+        color: white;
+        display: flex;
+        align-items: center;
+      "
+    >
+      <img src="./image1 1.svg" alt="logo" class="logo" />
+      <h1 id="page-title">Vidéos à la demande</h1>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <div id="best-movie" class="best-movie-container container mt-5"></div>
+
+    <h3 class="container mt-5">Meilleurs films</h3>
+    <div id="best-rating-movies" class="container mt-5"></div>
+
+    <div id="action-movies" class="container mt-5"></div>
+
+    <div id="adventure-movies" class="container mt-5"></div>
+
+    <div id="movies-container" class="container mt-5"></div>
+
+    <!-- FIRST SWITCHABLE CATEGORY SECTION -->
+    <div class="container mt-5">
+      <label for="first-switchable-category-select"
+        >Choisissez une catégorie :</label
+      >
+      <select id="first-switchable-category-select">
+        <option value="">-- Sélectionnez une catégorie --</option>
+      </select>
+    </div>
+    <div
+      id="first-switchable-category"
+      class="container mt-5"
+      style="width: 100%"
+    ></div>
+
+    <!-- SECOND SWITCHABLE CATEGORY SECTION -->
+
+    <div class="container mt-5">
+      <label for="second-switchable-category-select"
+        >Choisissez une catégorie :</label
+      >
+      <select id="second-switchable-category-select">
+        <option value="">-- Sélectionnez une catégorie --</option>
+      </select>
+    </div>
+    <div
+      id="second-switchable-category"
+      class="container mt-5"
+      style="width: 100%"
+    ></div>
+
+    <div id="modal-container" style="display: none"></div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
 
     <script>
-        // SCRIPT TO GET THE BEST MOVIES 
-        const apiUrlForBestMovies = "http://localhost:8000/api/v1/titles/?imdb_score_min=9&sort_by=-imdb_score";
-        const fetchBestMovieDetails = async(id) => {
-            const bestMovieDetailsResponse = await fetch(`http://localhost:8000/api/v1/titles/${id}`)
-            const bestMovieDetails = await bestMovieDetailsResponse.json()
-            return bestMovieDetails
-        }
+      // Charger la police depuis Google Fonts
+      const loadFont = () => {
+        const link = document.createElement("link");
+        link.href =
+          "https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap";
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
 
-        async function fetchBestMovies() {
-            let currentPage = 1; 
-            let bestMovies = [];  
+        // Appliquer la police au body après que la police a été chargée
+        document.body.style.fontFamily = "'Oswald', sans-serif";
+      };
 
-            try {
-                while (true) {
-                    const response = await fetch(`${apiUrlForBestMovies}&page=${currentPage}`);
+      loadFont();
 
-                    console.log("response ==>",response);
-                    if (!response.ok) {
-                        throw new Error(`Erreur lors de la récupération de la page ${currentPage}: ${response.status}`);
-                    }
+      // SCRIPT TO GET THE BEST MOVIES
+      const apiUrlForBestMovies =
+        "http://localhost:8000/api/v1/titles/?imdb_score_min=9&sort_by=-imdb_score";
+      const fetchBestMovieDetails = async (id) => {
+        const bestMovieDetailsResponse = await fetch(
+          `http://localhost:8000/api/v1/titles/${id}`
+        );
+        const bestMovieDetails = await bestMovieDetailsResponse.json();
+        return bestMovieDetails;
+      };
 
-                    const data = await response.json();
+      async function fetchBestMovies() {
+        let currentPage = 1;
+        let bestMovies = [];
 
-                    bestMovies = bestMovies.concat(data.results);
+        try {
+          while (true) {
+            const response = await fetch(
+              `${apiUrlForBestMovies}&page=${currentPage}`
+            );
 
-                    if (!data.next) {
-                        break; 
-                    }
-                        
-                    currentPage++; 
-                }
-
-
-
-                const movieDiv = document.getElementById("best-movie");
-                const bestMovie = bestMovies[0];
-                const bestRatingMovies = document.getElementById("best-rating-movies")
-                console.log("bestRatingMovies :::::", bestRatingMovies)
-                const bestMovieDetails = await fetchBestMovieDetails(bestMovie.id)
-
-                movieDiv.innerHTML = `
-                      <div class="group p-3 mb-5 rounded">
-                                <h3>Meilleur film</h3>
-                                <div class="card-body text-center" style="border: 6px solid black; display : flex">
-                                    <img src="${bestMovieDetails.image_url}" style="width:227px; height:334px" />
-                                    <div class ="bg-success" style="display : flex; flex-direction : column; justify-content : space-evenly; position : relative"> 
-                                        <h4 class="card-title text-white" style="font-size : 48px">${bestMovie.title}</h4>
-                                        <p style="font-size: 28px">${bestMovieDetails.long_description}</p>
-                                        <button class="btn btn-danger" style="width : 166px; border-radius: 25; position: absolute; right : 10px; bottom : 10px">Détails</button> 
-                                    </div>
-                                </div>
-                            </div>
-                `;
-                bestRatingMovies.innerHTML = `
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; background-color: blue; padding: 16px;">
-                        ${bestMovies.slice(0, 6).map((movie) => `
-                        <div style="flex: 1 1 calc(33.333% - 16px); position: relative; overflow: hidden; max-width: 242px; aspect-ratio: 2 / 3;">
-                            <img src="${movie.image_url}" alt="${movie.title}" style="width: 100%; height: 100%; object-fit: cover;">
-                            <div style="position: absolute; bottom: 50%; left: 0; right: 0; transform: translateY(50%); background-color: rgba(0, 0, 0, 0.7); color: white; text-align: center; padding: 8px; font-size: 16px; z-index: 1;">
-                                ${movie.title}
-                                </br>
-                                <button>Détails</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                `
-
-                return bestMovies;
-
-            } catch (error) {
-                console.error("Erreur lors de la récupération des films :", error);
-                return [];
-            }
-}
-
-
-
- fetchBestMovies();
-
-
-
-
-
-const fetchMoviesByCategory = async (category, maxMovies = 6) => {
-    const baseUrl = `http://localhost:8000/api/v1/titles/?genre=${category}`;
-    let movies = [];
-    let currentPage = 1;
-
-    try {
-        while (movies.length < maxMovies) {
-            const url = `${baseUrl}&page=${currentPage}`;
-            const response = await fetch(url);
+            console.log("response ==>", response);
             if (!response.ok) {
-                throw new Error(`Erreur lors de la récupération de la catégorie "${category}" à la page ${currentPage}: ${response.status}`);
+              throw new Error(
+                `Erreur lors de la récupération de la page ${currentPage}: ${response.status}`
+              );
             }
-
 
             const data = await response.json();
 
+            bestMovies = bestMovies.concat(data.results);
 
-            const resultsToAdd = maxMovies - movies.length; 
+            if (!data.next) {
+              break;
+            }
+
+            currentPage++;
+            if (currentPage > 2) {
+              break;
+            }
+          }
+
+          const bestMovieDiv = document.getElementById("best-movie");
+          const bestMovie = bestMovies[0];
+          const bestRatingMovies =
+            document.getElementById("best-rating-movies");
+          console.log("bestRatingMovies :::::", bestRatingMovies);
+          const bestMovieDetails = await fetchBestMovieDetails(bestMovie.id);
+
+          bestMovieDiv.innerHTML = `
+                  
+                        <h3>Meilleur film</h3>
+                        <div class="best-movie-border-limit">
+                            <img src="${bestMovieDetails.image_url}" alt="Meilleur film" class="best-movie-img" />
+                            <div class="best-movie-details">
+                                <h4 class="best-movie-title">${bestMovie.title}</h4>
+                                <p class="best-movie-description">${bestMovieDetails.long_description}</p>
+                            </div>
+                            <button class="best-movie-details-btn" onclick="openModal('${bestMovieDetails.id}>Détails</button>
+                        </div>
+                `;
+
+          bestRatingMovies.innerHTML = `
+                        <div class="movie-containers">
+                            ${bestMovies
+                              .slice(0, 6)
+                              .map(
+                                (movie) => `
+                            <div class="movie-cards"">
+                                <img src="${movie.image_url}" alt="${movie.title}">
+                            <div class="movie-cards-details">
+                                <!-- Texte aligné à gauche -->
+                                <p style="margin: 0;">${movie.title}</p>
+
+                                <!-- Bouton aligné à droite -->
+                                <div class="movie-card-btn-container">
+                                    <button class="movie-card-btn" id="${movie.id}" onclick="openModal('${movie.id}')">Détails</button>
+                                </div>
+                            </div>
+                            </div>
+                        `
+                              )
+                              .join("")}
+                    </div>
+
+                `;
+
+          return bestMovies;
+        } catch (error) {
+          console.error("Erreur lors de la récupération des films :", error);
+          return [];
+        }
+      }
+
+      fetchBestMovies();
+
+      const fetchMoviesByCategory = async (category, maxMovies = 6) => {
+        const baseUrl = `http://localhost:8000/api/v1/titles/?genre=${category}`;
+        let movies = [];
+        let currentPage = 1;
+
+        try {
+          while (movies.length < maxMovies) {
+            const url = `${baseUrl}&page=${currentPage}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(
+                `Erreur lors de la récupération de la catégorie "${category}" à la page ${currentPage}: ${response.status}`
+              );
+            }
+
+            const data = await response.json();
+
+            const resultsToAdd = maxMovies - movies.length;
             movies = movies.concat(data.results.slice(0, resultsToAdd));
-
 
             if (!data.next) break;
 
-            currentPage++; 
+            currentPage++;
+          }
+
+          return movies;
+        } catch (error) {
+          console.error(
+            `Erreur lors de la récupération des films pour la catégorie "${category}":`,
+            error
+          );
+          return [];
+        }
+      };
+
+      const displayStaticMovies = async () => {
+        const actionMovies = await fetchMoviesByCategory("Action", 6);
+        const adventureMovies = await fetchMoviesByCategory("Adventure", 6);
+        const actionMoviesContainer = document.getElementById("action-movies");
+        const adventureMoviesContainer =
+          document.getElementById("adventure-movies");
+        actionMoviesContainer.innerHTML = `
+             <h3>Films d'action</h3>
+                <div class="movie-containers">
+                    ${actionMovies
+                      .map(
+                        (movie) => `
+                        <div class="movie-cards">
+                            <img src="${movie.image_url}" alt="${movie.title}">
+                                  <div class="movie-cards-details">
+                                <!-- Texte aligné à gauche -->
+                                <p style="margin: 0;">${movie.title}</p>
+
+                                <!-- Bouton aligné à droite -->
+                                <div class="movie-card-btn-container">
+                                    <button class="movie-card-btn" id="${movie.id}" onclick="openModal('${movie.id}')">Détails</button>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                      )
+                      .join("")}
+                        <button class="toggle-button" style="margin: auto; justify-self: center;" onclick="toggleMovies('action-movies')">Afficher plus</button>
+                </div>
+            `;
+        adventureMoviesContainer.innerHTML = `
+                <h3>Films d'aventure</h3>
+                <div class="movie-containers">
+                    ${adventureMovies
+                      .map(
+                        (movie) => `
+                       <div class="movie-cards">
+                            <img src="${movie.image_url}" alt="${movie.title}">
+                                  <div class="movie-cards-details">
+                                <!-- Texte aligné à gauche -->
+                                <p style="margin: 0;">${movie.title}</p>
+                                <!-- Bouton aligné à droite -->
+                                <div class="movie-card-btn-container">
+                                    <button class="movie-card-btn" id="${movie.id}" onclick="openModal('${movie.id}')">Détails</button>
+                                </div>
+                            </div>
+                        </div> `
+                      )
+                      .join("")}
+                <button class="toggle-button" style="margin: auto; justify-self: center;" onclick="toggleMovies('adventure-movies')">Afficher plus</button>
+
+            `;
+      };
+
+      displayStaticMovies();
+
+      const toggleMovies = (containerId) => {
+        const container = document.getElementById(containerId);
+        const toggleButton = container.querySelector(".toggle-button");
+        const movieCards = container.querySelectorAll(".movie-cards");
+
+        let visibleMovies = 6;
+        if (window.matchMedia("(max-width: 767px)").matches) {
+          visibleMovies = 2;
+        } else if (window.matchMedia("(max-width: 1023px)").matches) {
+          visibleMovies = 4;
         }
 
-        return movies;
-    } catch (error) {
-        console.error(`Erreur lors de la récupération des films pour la catégorie "${category}":`, error);
-        return [];
-    }
-};
+        movieCards.forEach((card, index) => {
+          const imgElement = card.querySelector("img");
+          if (index >= visibleMovies) {
+            if (
+              imgElement.style.display === "none" ||
+              !imgElement.style.display
+            ) {
+              card.style.display = "flex";
+              imgElement.style.display = "block";
+            } else {
+              card.style.display = "none";
+              imgElement.style.display = "none";
+            }
+          }
+        });
+        toggleButton.textContent =
+          toggleButton.textContent === "Afficher plus"
+            ? "Afficher moins"
+            : "Afficher plus";
+      };
 
-const getMovies = async () => {
-    const categories = ["Adventure", "Action", "Fantasy"];
-    const moviesByCategory = await Promise.all(
-        categories.map((category) => fetchMoviesByCategory(category, 6))
-    );
+      const getGenres = async () => {
+        let currentPage = 1;
+        let genres = [];
+        try {
+          while (true) {
+            const response = await fetch(
+              `http://localhost:8000/api/v1/genres/?page=${currentPage}`
+            );
+            if (!response.ok) {
+              throw new Error(
+                `Erreur lors de la récupération de la page ${currentPage}: ${response.status}`
+              );
+            }
+            const data = await response.json();
+            genres = genres.concat(data.results);
+            if (!data.next) {
+              break;
+            }
+            currentPage++;
+          }
+          return genres; // Retourne les genres après avoir récupéré toutes les pages
+        } catch (error) {
+          console.error("Erreur lors de la récupération des genres :", error);
+          return [];
+        }
+      };
 
-    categories.forEach((category, index) => {
-        console.log(`${category} Movies:`, moviesByCategory[index]);
-    });
-};
+      // Fonction pour remplir le menu déroulant
+      const populateFirstSelect = (categories) => {
+        const selectElement = document.getElementById(
+          "first-switchable-category-select"
+        );
+        selectElement.innerHTML =
+          '<option value="">-- Sélectionnez une catégorie --</option>'; // Réinitialise le contenu
 
-getMovies();
+        categories.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category.name.toString();
+          option.textContent = category.name.toString();
+          selectElement.appendChild(option);
+        });
+      };
 
+      const populateSecondSelect = (categories) => {
+        const selectElement = document.getElementById(
+          "second-switchable-category-select"
+        );
+        selectElement.innerHTML =
+          '<option value="">-- Sélectionnez une catégorie --</option>';
 
+        categories.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category.name.toString();
+          option.textContent = category.name.toString();
+          selectElement.appendChild(option);
+        });
+      };
 
+      // Appel des fonctions principales
+      const displayGenres = async () => {
+        try {
+          const categories = await getGenres(); // Attendre que les genres soient récupérés
+          populateFirstSelect(categories); // Passer les genres au menu déroulant
+          populateSecondSelect(categories);
+        } catch (error) {
+          console.error("Erreur :", error);
+        }
+      };
+
+      displayGenres();
+
+      const displayCategory = (selectId, containerId) => {
+        const selectElement = document.getElementById(selectId);
+        const containerElement = document.getElementById(containerId);
+
+        selectElement.addEventListener("change", async (event) => {
+          const selectedCategory = event.target.value;
+
+          if (!selectedCategory) {
+            containerElement.innerHTML =
+              "<p>Sélectionnez une catégorie pour voir les films.</p>";
+            return;
+          }
+
+          const movies = await fetchMoviesByCategory(selectedCategory, 6);
+          console.log(`Films de la catégorie "${selectedCategory}":`, movies);
+
+          containerElement.innerHTML = `
+                    <div class="movie-containers">
+                        ${movies
+                          .map(
+                            (movie) => `
+                            <div class="movie-cards">
+                                <img src="${movie.image_url}" alt="${movie.title}">
+                                <div class="movie-cards-details">
+                                <!-- Texte aligné à gauche -->
+                                    <p style="margin: 0;">${movie.title}</p>
+
+                                <!-- Bouton aligné à droite -->
+                                    <div class="movie-card-btn-container">
+                                        <button class="movie-card-btn" id="${movie.id}" onclick="openModal('${movie.id}')">Détails</button>
+                                    </div>
+                                </div>
+                            </div> `
+                          )
+                          .join("")}
+                          <button class="toggle-button" style="margin: auto; justify-self: center;" onclick="toggleMovies('${containerId}')">Afficher plus</button>
+                    </div>
+                `;
+        });
+      };
+
+      // Appeler la fonction pour chaque catégorie sélectionnable
+      displayCategory(
+        "first-switchable-category-select",
+        "first-switchable-category"
+      );
+      displayCategory(
+        "second-switchable-category-select",
+        "second-switchable-category"
+      );
+
+      const openModal = async (id) => {
+        const selectedMovie = document.getElementById(id);
+        console.log(
+          "selectedMovie",
+          selectedMovie.id,
+          "typeOf Selected Movie : ",
+          typeof selectedMovie.id
+        );
+        const modalContainer = document.getElementById("modal-container");
+        const movie = await fetch(`http://localhost:8000/api/v1/titles/${id}`);
+        const movieDetails = await movie.json();
+        console.log("movieDetails", movieDetails);
+        // Construire le contenu de la modal
+        modalContainer.innerHTML = `
+            <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000;">
+                <div id="modal-content">
+                    <button id="close-modal-cross" >
+                      <p>X</p>
+                    </button>
+                    <div class="movie-info-container">
+                        <!-- Texte à gauche -->
+                        <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                            <h2 style="margin: 0; font-size: 48px">${
+                              movieDetails.title
+                            }</h2>
+                            <p style="margin: 0; color: #555; font-size: 24px">${
+                              movieDetails.date_published
+                            } - ${movieDetails.genres}</p>
+                            <p style="margin: 0; color: #555; font-size: 24px">${
+                              movieDetails.duration
+                            } min (${movieDetails.countries.join(", ")})</p>
+                            <p style="margin: 0; color: #555; font-size: 24px">IMDB Score : ${
+                              movieDetails.imdb_score
+                            }/10</p>
+                            <p style="margin-top: 15px; color: #555; font-size: 24px"><strong>Réalisé</strong> par : </br> ${movieDetails.directors.join(
+                              ", "
+                            )}</p>
+                        </div>
+
+                        <!-- Image à droite -->
+                        <div style="flex: 1;" class="desktop-img-container">
+                            <img src="${movieDetails.image_url}" alt="${
+          movieDetails.title
+        }" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover;">
+                        </div>
+                    </div>
+
+                    <!-- Description en dessous -->
+                    <div>
+                        <p style="margin: 0; color: #333; font-size: 24px; font-family: oswald; line-height: 37.7px; font-weight: 300">${
+                          movieDetails.long_description
+                        }</p>
+
+                        <!-- Pour display l'image au bon endroit sur mobile / tablette -->
+                        <div id = "mobile-modal-img-container" >   
+                            <img src="${movieDetails.image_url}" alt="${
+          movieDetails.tile
+        }">
+                        </div>
+                        <p style="margin-top: 24px; color: #555; font-family: oswald; font-size: 20px;"> <strong>Avec</strong> : <br/> ${movieDetails.actors.join(
+                          ", "
+                        )}</p>
+                    </div>
+                    <button id="close-modal-btn" style="margin: auto; color: white; font-family: oswald; background: red; width: 214px; border: none; border-radius: 25px; height: 36px; font-size: 20px; cursor: pointer;">
+                        Fermer
+                    </button>
+                </div>
+
+            </div>
+        `;
+
+        // Afficher la modal
+
+        modalContainer.style.display = "block";
+
+        document
+          .getElementById("close-modal-btn")
+          .addEventListener("click", closeModal);
+        document
+          .getElementById("close-modal-cross")
+          .addEventListener("click", closeModal);
+        document
+          .getElementById("modal-overlay")
+          .addEventListener("click", (e) => {
+            if (e.target.id === "modal-overlay") {
+              closeModal();
+            }
+          });
+      };
+
+      const closeModal = async () => {
+        const modalContainer = document.getElementById("modal-container");
+        modalContainer.style.display = "none"; // Cacher la modal
+        modalContainer.innerHTML = ""; // Supprimer le contenu
+      };
     </script>
-</body>
+  </body>
 </html>
