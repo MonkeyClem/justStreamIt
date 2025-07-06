@@ -367,11 +367,11 @@
         });
       };
 
-      // Appel des fonctions principales
+
       const displayGenres = async () => {
         try {
-          const categories = await getGenres(); // Attendre que les genres soient récupérés
-          populateFirstSelect(categories); // Passer les genres au menu déroulant
+          const categories = await getGenres(); 
+          populateFirstSelect(categories); 
           populateSecondSelect(categories);
         } catch (error) {
           console.error("Erreur :", error);
@@ -394,7 +394,6 @@
           }
 
           const movies = await fetchMoviesByCategory(selectedCategory, 6);
-          console.log(`Films de la catégorie "${selectedCategory}":`, movies);
 
           containerElement.innerHTML = `
                     <div class="movie-containers">
@@ -442,8 +441,6 @@
         const modalContainer = document.getElementById("modal-container");
         const movie = await fetch(`http://localhost:8000/api/v1/titles/${id}`);
         const movieDetails = await movie.json();
-        console.log("movieDetails", movieDetails);
-        // Construire le contenu de la modal
         modalContainer.innerHTML = `
             <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1000;">
                 <div id="modal-content">
@@ -523,8 +520,8 @@
 
       const closeModal = async () => {
         const modalContainer = document.getElementById("modal-container");
-        modalContainer.style.display = "none"; // Cacher la modal
-        modalContainer.innerHTML = ""; // Supprimer le contenu
+        modalContainer.style.display = "none"; 
+        modalContainer.innerHTML = ""; 
       };
     </script>
   </body>
