@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <title>JustStreamIt</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -13,11 +14,9 @@
       rel="stylesheet"
     />
     <link href="styles.css" rel="stylesheet" />
-
-    <!-- <title>Movies List</title> -->
   </head>
   <body>
-    <div
+    <header
       class="container mt-5"
       style="
         background-color: #61787f;
@@ -26,20 +25,21 @@
         align-items: center;
       "
     >
-      <img src="./image1 1.svg" alt="logo" class="logo" />
+      <img src="./image1_1.svg" alt="logo" class="logo" />
       <h1 id="page-title">Vidéos à la demande</h1>
-    </div>
+    </header>
 
-    <div id="best-movie" class="best-movie-container container mt-5"></div>
+    <section
+      id="best-movie"
+      class="best-movie-container container mt-5"
+    ></section>
 
     <h3 class="container mt-5">Meilleurs films</h3>
-    <div id="best-rating-movies" class="container mt-5"></div>
+    <section id="best-rating-movies" class="container mt-5"></section>
 
-    <div id="action-movies" class="container mt-5"></div>
+    <section id="action-movies" class="container mt-5"></section>
 
-    <div id="adventure-movies" class="container mt-5"></div>
-
-    <div id="movies-container" class="container mt-5"></div>
+    <section id="adventure-movies" class="container mt-5"></section>
 
     <!-- FIRST SWITCHABLE CATEGORY SECTION -->
     <div class="container mt-5">
@@ -57,7 +57,6 @@
     ></div>
 
     <!-- SECOND SWITCHABLE CATEGORY SECTION -->
-
     <div class="container mt-5">
       <label for="second-switchable-category-select"
         >Choisissez une catégorie :</label
@@ -87,16 +86,13 @@
           "https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap";
         link.rel = "stylesheet";
         document.head.appendChild(link);
-
-        // Appliquer la police au body après que la police a été chargée
         document.body.style.fontFamily = "'Oswald', sans-serif";
       };
 
       loadFont();
 
       // SCRIPT TO GET THE BEST MOVIES
-      const apiUrlForBestMovies =
-        "http://localhost:8000/api/v1/titles/?imdb_score_min=9&sort_by=-imdb_score";
+
       const fetchBestMovieDetails = async (id) => {
         const bestMovieDetailsResponse = await fetch(
           `http://localhost:8000/api/v1/titles/${id}`
@@ -105,6 +101,8 @@
         return bestMovieDetails;
       };
 
+      const apiUrlForBestMovies ="http://localhost:8000/api/v1/titles/?imdb_score_min=9&sort_by=-imdb_score";
+         
       async function fetchBestMovies() {
         let currentPage = 1;
         let bestMovies = [];
@@ -115,7 +113,6 @@
               `${apiUrlForBestMovies}&page=${currentPage}`
             );
 
-            console.log("response ==>", response);
             if (!response.ok) {
               throw new Error(
                 `Erreur lors de la récupération de la page ${currentPage}: ${response.status}`
@@ -140,7 +137,6 @@
           const bestMovie = bestMovies[0];
           const bestRatingMovies =
             document.getElementById("best-rating-movies");
-          console.log("bestRatingMovies :::::", bestRatingMovies);
           const bestMovieDetails = await fetchBestMovieDetails(bestMovie.id);
 
           bestMovieDiv.innerHTML = `
@@ -341,7 +337,6 @@
         }
       };
 
-      // Fonction pour remplir le menu déroulant
       const populateFirstSelect = (categories) => {
         const selectElement = document.getElementById(
           "first-switchable-category-select"
